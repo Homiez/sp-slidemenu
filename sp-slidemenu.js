@@ -69,7 +69,10 @@ defaults = {
     slidemenu_content  : ".slidemenu-content",
     disableCssAnimation: false,
     disable3d          : false,
-    direction          : 'left'
+    direction          : 'left',
+    /* added 2015.10.21 callback */
+    afterSlideOpen          : function(){},
+    afterSlideClose         : function(){}
 };
 
 gestureStart = false;
@@ -84,8 +87,8 @@ if (support.addEventListener) {
 }
 
 ANIME_SPEED = {
-    slider: 200,
-    scrollOverBack: 400
+    slider: 500,
+    scrollOverBack: 500
 };
 
 SLIDE_STATUS = {
@@ -172,6 +175,9 @@ SpSlidemenu.prototype.init = function(options) {
     if (!_this.main || !_this.slidemenu || !_this.button || !_this.slidemenuBody || !_this.slidemenuContent) {
         throw new Error('Element not found. Please set correctly.');
     }
+    //callback set
+    _this.afterSlideOpen = options.afterSlideOpen;
+    _this.afterSlideClose = options.afterSlideClose;
 
     _this.disableCssAnimation = (options.disableCssAnimation === undefined) ? false : options.disableCssAnimation;
     //Android 2.3 is true the disable3d
@@ -455,6 +461,7 @@ SpSlidemenu.prototype.slideOpenEnd = function() {
     for (var i = _this.main.length; i--; ) {
         addTouchEvent('start', _this.main[i], _this.mainTouchStart, false);
     }
+    _this.afterSlideOpen.call(_this);
 };
 
 SpSlidemenu.prototype.slideClose = function(event) {
@@ -474,7 +481,7 @@ SpSlidemenu.prototype.slideClose = function(event) {
         setStyles(_this.slidemenu, {
             transitionProperty: 'visibility',
             visibility: 'hidden',
-            zIndex: '-1'
+            zIndex: '-2'
         });
 
         setTimeout( function() {
@@ -519,6 +526,8 @@ SpSlidemenu.prototype.slideCloseEnd = function() {
 
     // set event
     removeTouchEvent('move', document, blockEvent, false);
+
+    _this.afterSlideClose.call(_this);
 };
 
 SpSlidemenu.prototype.scrollTouchStart = function(event) {
